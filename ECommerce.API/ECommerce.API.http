@@ -1,4 +1,4 @@
-@ECommerce.API_HostAddress = http://localhost:5212
+@ECommerce.API_HostAddress = https://phonexpress.azurewebsites.net
 
 GET {{ECommerce.API_HostAddress}}/weatherforecast/
 Accept: application/json

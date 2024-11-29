@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ECommerce.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ProductInventoryController : ControllerBase
     {

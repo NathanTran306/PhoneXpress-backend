@@ -44,5 +44,5 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.phonexpress_901E }}
+        publish-profile: ${{ secrets.phonexpress_0215 }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
