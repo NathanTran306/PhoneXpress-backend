@@ -15,6 +15,7 @@ using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using System.Reflection;
 using System.Text;
+using Microsoft.Extensions.Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -146,6 +147,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(opt =>
     var redisUrl = builder.Configuration.GetConnectionString("Redis");
     return ConnectionMultiplexer.Connect(redisUrl!);
 });
+
 
 var app = builder.Build();
 
