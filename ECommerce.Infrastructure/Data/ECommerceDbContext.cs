@@ -22,9 +22,18 @@ namespace ECommerce.Infrastructure.Data
         public DbSet<InventoryVariation> InventoryVariations { get; set; }
         private static string? GetConnectionString()
         {
-            IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../ECommerce.API")).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+            // Get the base directory dynamically
+            var basePath = AppContext.BaseDirectory;
+
+            // Build the configuration from the determined base path
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(basePath) // Use AppContext.BaseDirectory instead of hardcoding a relative path
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
             return configuration["ConnectionStrings:DefaultConnection"];
         }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(GetConnectionString());
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
