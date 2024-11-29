@@ -15,12 +15,18 @@ using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using System.Reflection;
 using System.Text;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnection"));
+    options.UseSqlServer("name=ConnectionStrings:DefaultConnection", sqlServerOptionsAction: sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 2,    // Number of retry attempts
+            maxRetryDelay: TimeSpan.FromSeconds(15), // Delay between retries
+            errorNumbersToAdd: null // Specific error codes to retry, or null for default
+        );
+    }));
 
 builder.Services.AddControllers();
 
