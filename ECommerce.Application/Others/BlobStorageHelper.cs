@@ -29,22 +29,24 @@ namespace ECommerce.Application.Others
                 var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
                 await containerClient.CreateIfNotExistsAsync();
 
-                // Generate a unique filename
                 var fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
 
-                // Create a BlobClient to upload the file
                 var blobClient = containerClient.GetBlobClient(fileName);
 
-                // Upload the file stream to the blob
                 using (var stream = file.OpenReadStream())
                 {
                     await blobClient.UploadAsync(stream, overwrite: true);
                 }
 
-                // Optionally, set metadata for the blob
+                var headers = new Azure.Storage.Blobs.Models.BlobHttpHeaders
+                {
+                    CacheControl = "public, max-age=31536000"
+                };
+                await blobClient.SetHttpHeadersAsync(headers);
+
                 await blobClient.SetMetadataAsync(new Dictionary<string, string>
                 {
-                    { "key1", "value1" }, // Add your key-value pairs here
+                    { "key1", "value1" },
                     { "key2", "value2" }
                 });
 
@@ -52,11 +54,10 @@ namespace ECommerce.Application.Others
             }
             catch (Exception ex)
             {
-                return ex.Message; // Return the error message if something goes wrong
+                return ex.Message;
             }
         }
 
-        // Method to retrieve metadata of a blob
         public async Task<IDictionary<string, string>> GetMetadataAsync(string fileName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
@@ -66,7 +67,6 @@ namespace ECommerce.Application.Others
             return blobProperties.Value.Metadata;
         }
 
-        // Method to delete a file from Blob Storage
         public async Task DeleteFileAsync(string fileName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
