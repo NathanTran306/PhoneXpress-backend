@@ -153,16 +153,12 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-        c.RoutePrefix = string.Empty; // Uncomment if you want Swagger UI at the root URL
-    });
-
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.RoutePrefix = string.Empty; // Uncomment if you want Swagger UI at the root URL
+});
 
 app.UseStaticFiles();
 
