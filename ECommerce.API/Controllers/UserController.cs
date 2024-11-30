@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ECommerce.API.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
