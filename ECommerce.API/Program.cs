@@ -136,8 +136,8 @@ builder.Services.AddAutoMapper(typeof(ImageProfile).Assembly);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
-        builder.AllowAnyOrigin()
+    options.AddPolicy("AllowFrontend", builder =>
+        builder.WithOrigins("https://icy-forest-0c436d800.4.azurestaticapps.net")
                .AllowAnyMethod()
                .AllowAnyHeader());
 });
