@@ -164,7 +164,7 @@ app.UseStaticFiles();
 
 app.UseSession();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontEnd");
 
 app.UseAuthentication();
 
