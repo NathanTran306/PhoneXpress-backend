@@ -117,10 +117,6 @@ namespace ECommerce.Application.Service
                 .Include(pi => pi.InventoryVariations)
                 .FirstOrDefaultAsync(pi => pi.Id == inventoryId);
 
-            //var productInventory = await _unitOfWork.GetRepository<ProductInventory>().Entities
-            //    .Include(pi => pi.InventoryVariations)
-            //    .FirstOrDefaultAsync(pi => pi.ProductId == productId && pi.InventoryVariations.Any(iv => iv.ProductVariationId == variationId));
-
             if (productInventory == null)
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "This product inventory is not found!");

@@ -1,91 +1,14 @@
 using ECommerce.API.Middleware;
-using ECommerce.Application.Interfaces;
-using ECommerce.Application.Interfaces.IRepositories;
-using ECommerce.Application.Interfaces.IServices;
-using ECommerce.Application.Mapping;
-using ECommerce.Application.Others;
-using ECommerce.Application.Service;
-using ECommerce.Infrastructure.Data;
-using ECommerce.Infrastructure.Data.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using StackExchange.Redis;
-using System.Reflection;
-using System.Text;
-using Microsoft.Extensions.Azure;
+using ECommerce.Application;
+using ECommerce.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ECommerceDbContext>(options =>
-    options.UseSqlServer("name=ConnectionStrings:DefaultConnection", sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 2,    // Number of retry attempts
-            maxRetryDelay: TimeSpan.FromSeconds(15), // Delay between retries
-            errorNumbersToAdd: null // Specific error codes to retry, or null for default
-        );
-    }));
-
 builder.Services.AddControllers();
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Version = "v1",
-        Title = "PhoneXpress-ECommerce-NathanTran"
-    });
+builder.Services.AddApplicationServices(builder.Configuration);
 
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
-
-    // Thêm JWT Bearer Token vào Swagger
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "JWT Authorization header using scheme Bearer.",
-        Type = SecuritySchemeType.Http,
-        Name = "Authorization",
-        Scheme = "bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-            }
-        });
-});
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["JWT:Audience"],
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]!))
-    };
-});
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -100,55 +23,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Add scoped
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IDiscountService, DiscountService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IUserAddressService, UserAddressService>();
-builder.Services.AddScoped<IProductInventoryService, ProductInventoryService>();
-builder.Services.AddScoped<IProductVariationService, ProductVariationService>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
-builder.Services.AddScoped<IProductDiscountService, ProductDiscountService>();
-builder.Services.AddScoped<IProductImageService, ProductImageService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IInventoryVariationService, InventoryVariationService>();
-builder.Services.AddScoped<IRedisCacheService>(provider =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("Redis");
-    return new RedisCacheService(connectionString);
-});
-builder.Services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
-builder.Services.AddScoped<IVnPayService, VnPayService>();
-
-// Add AutoMapper
-builder.Services.AddAutoMapper(typeof(UserProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(DiscountProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(ProductProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(CartProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(UserAddressProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(ProductInventoryProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(ImageProfile).Assembly);
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", builder =>
-        builder.WithOrigins("https://icy-forest-0c436d800.4.azurestaticapps.net")
-               .AllowAnyMethod()
-               .AllowAnyHeader());
-});
-
-builder.Services.AddSingleton<IConnectionMultiplexer>(opt =>
-{
-    var redisUrl = builder.Configuration.GetConnectionString("Redis");
-    return ConnectionMultiplexer.Connect(redisUrl!);
-});
-
-
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -157,7 +31,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-    c.RoutePrefix = string.Empty; // Uncomment if you want Swagger UI at the root URL
+    //c.RoutePrefix = string.Empty; // Uncomment if you want Swagger UI at the root URL
 });
 
 app.UseStaticFiles();
